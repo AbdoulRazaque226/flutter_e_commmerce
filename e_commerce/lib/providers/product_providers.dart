@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../data/productRepository.dart';
+import '../data/product_repository.dart';
 import '../models/product.dart';
 
 /// Options de tri disponibles pour le catalogue.

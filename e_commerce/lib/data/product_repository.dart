@@ -1,6 +1,5 @@
 import 'dart:math';
-
-import 'package:ecommerce_app/data/mockProducts.dart';
+import 'mock_products.dart';
 
 import '../models/product.dart';
 

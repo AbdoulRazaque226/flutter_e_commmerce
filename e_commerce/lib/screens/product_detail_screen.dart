@@ -1,11 +1,14 @@
-import 'package:ecommerce_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/product_providers.dart';
+
 import '../models/product.dart';
+import '../providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
+import '../providers/product_providers.dart';
+import '../screens/main_shell.dart';
 import '../theme/app_theme.dart';
 import '../widgets/async_error_view.dart';
+import '../widgets/fly_to_cart_animation.dart';
 
 class ProductDetailScreen extends ConsumerWidget {
   final String productId;
@@ -30,12 +33,21 @@ class ProductDetailScreen extends ConsumerWidget {
   }
 }
 
-class _ProductDetailBody extends ConsumerWidget {
+class _ProductDetailBody extends ConsumerStatefulWidget {
   final Product product;
   const _ProductDetailBody({required this.product});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ProductDetailBody> createState() => _ProductDetailBodyState();
+}
+
+class _ProductDetailBodyState extends ConsumerState<_ProductDetailBody> {
+
+  final GlobalKey _addButtonKey = GlobalKey();
+
+  @override
+  Widget build(BuildContext context) {
+    final product = widget.product;
     final isFavorite = ref.watch(isFavoriteProvider(product.id));
 
     return Column(
@@ -113,10 +125,18 @@ class _ProductDetailBody extends ConsumerWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
+                key: _addButtonKey,
                 icon: const Icon(Icons.add_shopping_cart),
                 label: Text(product.inStock ? 'Ajouter au panier' : 'Indisponible'),
                 onPressed: product.inStock
                     ? () {
+                        // Animation bonus : vol de la miniature vers l'icône panier.
+                        showFlyToCartAnimation(
+                          context,
+                          startKey: _addButtonKey,
+                          endKey: ref.read(cartIconKeyProvider),
+                          imageUrl: product.imageUrl,
+                        );
                         ref.read(cartProvider.notifier).addProduct(product);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

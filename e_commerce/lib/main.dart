@@ -6,8 +6,6 @@ import 'theme/app_theme.dart';
 
 void main() {
   runApp(
-    // ProviderScope = racine obligatoire pour que Riverpod fonctionne.
-    // Tous les providers de l'app vivent dans cet arbre.
     const ProviderScope(child: MyApp()),
   );
 }

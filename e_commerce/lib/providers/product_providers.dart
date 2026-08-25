@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../data/product_repository.dart';
 import '../models/product.dart';
 
@@ -71,19 +72,10 @@ class FilterNotifier extends StateNotifier<FilterState> {
   void reset() => state = const FilterState();
 }
 
-// ---------------------------------------------------------------------
-// PROVIDERS
-// ---------------------------------------------------------------------
-
-/// Provider #1 — instance unique du repository.
-/// Passe `simulateError: true` ici pour tester l'écran d'erreur.
-final productRepositoryProvider = Provider<ProductRepository>((ref) {
+final productRepositoryProvider = Provider<ProductRepositoryInterface>((ref) {
   return const ProductRepository(simulateError: false);
 });
 
-/// Provider #2 — récupère les produits de façon asynchrone.
-/// FutureProvider expose directement un AsyncValue<List<Product>>,
-/// géré nativement par l'UI (.when : loading / error / data).
 final productsProvider = FutureProvider<List<Product>>((ref) async {
   final repository = ref.watch(productRepositoryProvider);
   return repository.fetchProducts();
@@ -94,10 +86,7 @@ final filterProvider = StateNotifierProvider<FilterNotifier, FilterState>((ref) 
   return FilterNotifier();
 });
 
-/// Provider dérivé — combine productsProvider + filterProvider.
-/// C'est un Provider "calculé" : il se recalcule automatiquement dès que
-/// productsProvider OU filterProvider change. Aucune logique de filtrage
-/// ne vit dans les widgets.
+
 final filteredProductsProvider = Provider<AsyncValue<List<Product>>>((ref) {
   final productsAsync = ref.watch(productsProvider);
   final filter = ref.watch(filterProvider);
@@ -132,17 +121,13 @@ final filteredProductsProvider = Provider<AsyncValue<List<Product>>>((ref) {
   });
 });
 
-/// Provider family — récupère un produit précis par son id, pour l'écran
-/// de détail. `.family` permet de paramétrer un provider par un argument
-/// (ici productId) tout en gardant le cache par Riverpod.
 final productByIdProvider =
     FutureProvider.family<Product, String>((ref, productId) async {
   final repository = ref.watch(productRepositoryProvider);
   return repository.fetchProductById(productId);
 });
 
-/// Provider utilitaire — liste des catégories disponibles (pour les chips
-/// de filtre), dérivée elle aussi des produits chargés.
+
 final categoriesProvider = Provider<AsyncValue<List<String>>>((ref) {
   final productsAsync = ref.watch(productsProvider);
   return productsAsync.whenData(
